@@ -4,7 +4,7 @@ A command-line wrapper for the [bnussbau/trmnl-pipeline-php](https://github.com/
 
 ## Features
 
-- **Browser Rendering**: Convert HTML files or URLs to PNG images using headless browser rendering
+- **Browser Rendering**: Convert HTML files to PNG images using headless browser rendering (using Browsershot and puppeteer)
 - **Image Processing**: Advanced image manipulation for e-ink display compatibility
 - **Pipeline Processing**: Combined browser rendering and image processing in a single command
 - **Model Support**: Automatic configuration for 12+ different e-ink device models
@@ -13,8 +13,10 @@ A command-line wrapper for the [bnussbau/trmnl-pipeline-php](https://github.com/
 ## Installation
 
 ### Prerequisites
-Browser command requires Node.js and Puppeteer (globally installed).
-You can use the Image command without browser rendering.
+Browser command requires [Node.js](https://nodejs.org/en/download) and Puppeteer (globally installed). You can use the Image command without browser rendering.
+```sh
+npm install puppeteer --location=global
+```
 
 ### Download Binary (Recommended)
 
@@ -44,6 +46,11 @@ git clone https://github.com/your-org/trmnl-pipeline-cmd.git
 cd trmnl-pipeline-cmd
 composer install
 php trmnl-pipeline
+
+# Build phar
+php trmnl-pipeline app:build
+# Build executable
+./vendor/bin/phpacker build -c ./phpacker.json --src=./builds/trmnl-pipeline.phar --php=8.4
 ```
 
 ## Commands
