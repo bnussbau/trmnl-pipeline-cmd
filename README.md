@@ -230,5 +230,5 @@ MIT License. See LICENSE file for details.
 ## Related Projects
 
 - [bnussbau/trmnl-pipeline-php](https://github.com/bnussbau/trmnl-pipeline-php) - Core PHP package
-- [usetrmnl/byos_laravel](https://github.com/usetrmnl/byos_laravel) - Laravel integration
+- [usetrmnl/byos_laravel](https://github.com/usetrmnl/byos_laravel) - TRMNL BYOS that uses trmnl-pipeline-php
 - [TRMNL Models API](https://usetrmnl.com/api/models) - Device model specifications
