@@ -18,7 +18,7 @@ You can use the Image command without browser rendering.
 
 ### Download Binary (Recommended)
 
-Download the latest release for your platform:
+[Download the latest release](https://github.com/bnussbau/trmnl-pipeline-cmd/releases/latest) for your platform:
 
 * macOS
 * Linux
