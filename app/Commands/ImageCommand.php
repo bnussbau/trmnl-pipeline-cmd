@@ -15,17 +15,18 @@ class ImageCommand extends Command
      * @var string
      */
     protected $signature = 'image
-                            {--i|input= : Input image file path}
-                            {--o|output= : Output image file path (optional)}
-                            {--model= : Model name for automatic configuration (e.g., og_png)}
-                            {--format= : Output format (png, bmp)}
-                            {--width= : Image width in pixels}
-                            {--height= : Image height in pixels}
-                            {--rotation= : Rotation in degrees}
-                            {--colors= : Number of colors for quantization}
-                            {--bitDepth= : Bit depth (1, 2, 8)}
-                            {--offsetX= : Horizontal offset in pixels}
-                            {--offsetY= : Vertical offset in pixels}';
+                           {--i|input= : Input image file path}
+                           {--o|output= : Output image file path (optional)}
+                           {--model= : Model name for automatic configuration (e.g., og_png)}
+                           {--format= : Output format (png, bmp)}
+                           {--width= : Image width in pixels}
+                           {--height= : Image height in pixels}
+                           {--rotation= : Rotation in degrees}
+                           {--colors= : Number of colors for quantization}
+                           {--bitDepth= : Bit depth (1, 2, 8)}
+                           {--offsetX= : Horizontal offset in pixels}
+                           {--offsetY= : Vertical offset in pixels}
+                           {--dither : Enable Floyd–Steinberg dithering}';
 
     /**
      * The description of the command.
@@ -116,6 +117,10 @@ class ImageCommand extends Command
 
         if ($this->option('offsetY')) {
             $imageStage->offsetY((int) $this->option('offsetY'));
+        }
+
+        if ($this->option('dither')) {
+            $imageStage->dither(true);
         }
     }
 

@@ -100,6 +100,7 @@ Process existing images for e-ink display compatibility.
 - `--bitDepth`: Bit depth (1, 2, 8)
 - `--offsetX`: Horizontal offset in pixels
 - `--offsetY`: Vertical offset in pixels
+- `--dither`: Enable Floyd–Steinberg dithering during quantization and palette remapping
 
 **Examples:**
 ```bash
@@ -108,6 +109,9 @@ Process existing images for e-ink display compatibility.
 
 # Override specific parameters
 ./trmnl-pipeline image --input=photo.png --width=800 --height=600 --rotation=90
+
+# Enable Floyd–Steinberg dithering
+./trmnl-pipeline image --input=photo.png --dither
 
 # Convert to BMP format
 ./trmnl-pipeline image --input=photo.png --format=bmp --bitDepth=1

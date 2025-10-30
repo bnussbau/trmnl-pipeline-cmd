@@ -4,20 +4,20 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "3cc766b168d7919885241e4365908ab5",
+    "content-hash": "1e2780520d6d6044ea584105879054b0",
     "packages": [
         {
             "name": "bnussbau/trmnl-pipeline-php",
-            "version": "0.3.3",
+            "version": "0.4.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/bnussbau/trmnl-pipeline-php.git",
-                "reference": "951264e08ddeb14533156f1df154ca8d5fc4fe41"
+                "reference": "b58b937f36e55aa7cbd4859cbe7a902bf1050bf8"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/bnussbau/trmnl-pipeline-php/zipball/951264e08ddeb14533156f1df154ca8d5fc4fe41",
-                "reference": "951264e08ddeb14533156f1df154ca8d5fc4fe41",
+                "url": "https://api.github.com/repos/bnussbau/trmnl-pipeline-php/zipball/b58b937f36e55aa7cbd4859cbe7a902bf1050bf8",
+                "reference": "b58b937f36e55aa7cbd4859cbe7a902bf1050bf8",
                 "shasum": ""
             },
             "require": {
@@ -59,7 +59,7 @@
             ],
             "support": {
                 "issues": "https://github.com/bnussbau/trmnl-pipeline-php/issues",
-                "source": "https://github.com/bnussbau/trmnl-pipeline-php/tree/0.3.3"
+                "source": "https://github.com/bnussbau/trmnl-pipeline-php/tree/0.4.0"
             },
             "funding": [
                 {
@@ -75,7 +75,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-10-29T20:46:14+00:00"
+            "time": "2025-10-30T11:52:17+00:00"
         },
         {
             "name": "brick/math",
