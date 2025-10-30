@@ -1,0 +1,86 @@
+name: Release build
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-attach-assets:
+    name: Build binaries and attach to release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup PHP with tools
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          tools: box
+          extensions: imagick
+
+      - name: Get Composer cache directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+
+      - name: Cache Composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-composer-
+
+      - name: Install dependencies (with dev)
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Build PHAR from source
+        run: |
+          php trmnl-pipeline app:build --build-version=${{ github.ref_name }}
+          if [ -f builds/trmnl-pipeline ]; then mv builds/trmnl-pipeline builds/trmnl-pipeline.phar; fi
+
+      - name: Package platform binaries with phpacker
+        run: |
+          ./vendor/bin/phpacker build mac arm -c ./phpacker.json --src=./builds/trmnl-pipeline.phar --php=8.4
+          ./vendor/bin/phpacker build mac x64 -c ./phpacker.json --src=./builds/trmnl-pipeline.phar --php=8.4
+          ./vendor/bin/phpacker build linux arm -c ./phpacker.json --src=./builds/trmnl-pipeline.phar --php=8.4
+          ./vendor/bin/phpacker build linux x64 -c ./phpacker.json --src=./builds/trmnl-pipeline.phar --php=8.4
+
+      - name: Prefix filenames and zip outputs
+        run: |
+          set -e
+          mkdir -p dist
+          # macOS binaries
+          chmod +x build/mac/mac-arm || true
+          chmod +x build/mac/mac-x64 || true
+          mv build/mac/mac-arm build/mac/trmnl-pipeline-mac-arm
+          mv build/mac/mac-x64 build/mac/trmnl-pipeline-mac-x64
+          (cd build/mac && zip -j ../../dist/trmnl-pipeline-mac-arm.zip trmnl-pipeline-mac-arm)
+          (cd build/mac && zip -j ../../dist/trmnl-pipeline-mac-x64.zip trmnl-pipeline-mac-x64)
+
+          # Linux binaries
+          chmod +x build/linux/linux-arm || true
+          chmod +x build/linux/linux-x64 || true
+          mv build/linux/linux-arm build/linux/trmnl-pipeline-linux-arm
+          mv build/linux/linux-x64 build/linux/trmnl-pipeline-linux-x64
+          (cd build/linux && zip -j ../../dist/trmnl-pipeline-linux-arm.zip trmnl-pipeline-linux-arm)
+          (cd build/linux && zip -j ../../dist/trmnl-pipeline-linux-x64.zip trmnl-pipeline-linux-x64)
+
+          # Copy PHAR into dist
+          cp builds/trmnl-pipeline.phar dist/trmnl-pipeline.phar
+
+      - name: Attach assets to the GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/trmnl-pipeline-mac-arm.zip
+            dist/trmnl-pipeline-mac-x64.zip
+            dist/trmnl-pipeline-linux-arm.zip
+            dist/trmnl-pipeline-linux-x64.zip
+            dist/trmnl-pipeline.phar
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
