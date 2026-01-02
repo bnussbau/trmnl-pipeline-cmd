@@ -6,7 +6,7 @@
     "license": "MIT",
     "require": {
         "php": "^8.2",
-        "bnussbau/trmnl-pipeline-php": "^0.4.0",
+        "bnussbau/trmnl-pipeline-php": "^0.6.0",
         "laravel-zero/framework": "^12.0.2"
     },
     "require-dev": {

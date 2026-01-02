@@ -7,7 +7,7 @@ A command-line wrapper for the [bnussbau/trmnl-pipeline-php](https://github.com/
 - **Browser Rendering**: Convert HTML files to PNG images using headless browser rendering (using Browsershot and puppeteer)
 - **Image Processing**: Advanced image manipulation for e-ink display compatibility
 - **Pipeline Processing**: Combined browser rendering and image processing in a single command
-- **Model Support**: Automatic configuration for 12+ different e-ink device models
+- **Model Support**: Automatic configuration for 21+ different e-ink device models
 - **Standalone Binary**: Pre-compiled binaries for Mac and Linux
 
 ## Installation
@@ -41,6 +41,8 @@ php trmnl-pipeline.phar --help
 
 ### From Source
 
+* Deactivate ray, if installed [(Github issue)](https://github.com/laravel-zero/laravel-zero/issues/507#issuecomment-2765942970).
+
 ```bash
 git clone https://github.com/your-org/trmnl-pipeline-cmd.git
 cd trmnl-pipeline-cmd
@@ -67,6 +69,7 @@ Convert HTML content or URLs to PNG images using browser rendering.
 - `--input, -i`: Input HTML file path or URL (required)
 - `--output, -o`: Output PNG file path (optional, auto-generated if not provided)
 - `--model`: Model name for automatic configuration (optional)
+- `--timezone`: Browser timezone (e.g., `UTC`, `America/New_York`, `Europe/Berlin`) - useful for time/date-dependent content
 
 **Examples:**
 ```bash
@@ -78,6 +81,9 @@ Convert HTML content or URLs to PNG images using browser rendering.
 
 # Auto-generate output filename
 ./trmnl-pipeline browser --input=page.html
+
+# Set browser timezone for time-dependent content
+./trmnl-pipeline browser --input=page.html --timezone=America/New_York
 ```
 
 ### 2. Image Command
@@ -101,6 +107,8 @@ Process existing images for e-ink display compatibility.
 - `--offsetX`: Horizontal offset in pixels
 - `--offsetY`: Vertical offset in pixels
 - `--dither`: Enable Floyd–Steinberg dithering during quantization and palette remapping
+- `--palette`: Palette ID (e.g., `color-6a`, `color-7a`, `bw`, `gray-256`) - see Color Support section
+- `--colormap`: Comma-separated hex colors (e.g., `#FF0000,#00FF00,#0000FF`) - custom color palette
 
 **Examples:**
 ```bash
@@ -115,6 +123,15 @@ Process existing images for e-ink display compatibility.
 
 # Convert to BMP format
 ./trmnl-pipeline image --input=photo.png --format=bmp --bitDepth=1
+
+# Use predefined color palette (for color e-ink displays)
+./trmnl-pipeline image --input=photo.png --palette=color-6a
+
+# Use custom color palette
+./trmnl-pipeline image --input=photo.png --colormap="#FF0000,#00FF00,#0000FF,#FFFF00"
+
+# Combine palette with dithering
+./trmnl-pipeline image --input=photo.png --palette=color-7a --dither
 ```
 
 ### 3. Pipeline Command
@@ -128,6 +145,7 @@ Combined browser rendering and image processing in a single command.
 **Parameters:**
 Same as Image Command, plus:
 - `--input, -i`: Input HTML file path or URL (required)
+- `--timezone`: Browser timezone (e.g., `UTC`, `America/New_York`, `Europe/Berlin`)
 
 **Examples:**
 ```bash
@@ -136,6 +154,12 @@ Same as Image Command, plus:
 
 # Custom processing
 ./trmnl-pipeline pipeline --input=page.html --width=800 --height=480 --colors=2 --bitDepth=1
+
+# Set browser timezone and use color palette
+./trmnl-pipeline pipeline --input=page.html --timezone=America/New_York --palette=color-6a
+
+# Full pipeline with custom colormap and optional dithering
+./trmnl-pipeline pipeline --input=page.html --colormap="#FF0000,#00FF00,#0000FF" --dither
 ```
 
 ## Supported Models
@@ -146,6 +170,7 @@ The CLI supports automatic configuration for the following e-ink device models:
 - `og_png` - TRMNL OG (1-bit PNG)
 - `og_bmp` - TRMNL OG (1-bit BMP)
 - `og_plus` - TRMNL OG Plus (2-bit PNG)
+- `v2` - TRMNL X
 
 ### Amazon Kindle
 - `amazon_kindle_2024` - Amazon Kindle 2024
@@ -153,6 +178,7 @@ The CLI supports automatic configuration for the following e-ink device models:
 - `amazon_kindle_paperwhite_7th_gen` - Kindle Paperwhite 7th Gen
 - `amazon_kindle_7` - Kindle 7
 - `amazon_kindle_oasis_2` - Kindle Oasis 2
+- `amazon_kindle_scribe` - Amazon Kindle Scribe
 
 ### Kobo
 - `kobo_libra_2` - Kobo Libra 2
@@ -163,6 +189,81 @@ The CLI supports automatic configuration for the following e-ink device models:
 - `inkplate_10` - Inkplate 10
 - `inky_impression_7_3` - Inky Impression 7.3"
 - `inky_impression_13_3` - Inky Impression 13.3"
+- `m5_paper_s3` - M5PaperS3
+- `seeed_e1001` - Seeed E1001 Monochrome
+- `seeed_e1002` - Seeed E1002 (2-bit)
+- `waveshare_4_26` - Waveshare 4.26 (2-bit)
+- `waveshare_7_5_bw` - Waveshare 7.5 B/W
+
+## Color Support
+
+Color palettes allow you to process images for color e-ink displays. Palettes define a limited set of colors that the image will be quantized to, which is essential for devices with limited color capabilities.
+
+### Using Predefined Palettes
+
+Many device models specify palette IDs in their configuration. You can use these predefined palettes:
+
+- `bw` - Black & White (2 colors)
+- `gray-4` - 4 Grays (2-bit grayscale)
+- `gray-16` - 16 Grays (4-bit grayscale)
+- `gray-256` - 256 Grays (8-bit grayscale)
+- `color-6a` - Color palette with 6 colors (Red, Green, Blue, Yellow, Black, White)
+- `color-7a` - Color palette with 7 colors (includes Orange)
+
+**Example:**
+```bash
+# Use predefined palette for color display
+./trmnl-pipeline image --input=photo.png --palette=color-6a
+```
+
+### Using Custom Color Palettes
+
+You can define your own color palette by providing comma-separated hex color codes:
+
+```bash
+# Custom 4-color palette
+./trmnl-pipeline image --input=photo.png --colormap="#FF0000,#00FF00,#0000FF,#FFFF00"
+```
+
+### Palette and Bit Depth
+
+- **1-bit depth**: Typically uses 2 colors (black and white)
+- **2-bit depth**: Can use up to 4 colors (e.g., `color-6a` or `color-7a` palettes)
+- **8-bit depth**: Uses full grayscale (256 colors)
+
+When using color palettes, ensure your `--bitDepth` matches the palette size. For example, `color-6a` works best with `--bitDepth=2`.
+
+### Dithering with Color Palettes
+
+Dithering helps create smoother color transitions when using limited color palettes. It's recommended for photos but may make text appear less sharp:
+
+```bash
+# Color palette with dithering
+./trmnl-pipeline image --input=photo.png --palette=color-7a --bitDepth=2 --dither
+```
+
+## Browser Timezone
+
+The `--timezone` option sets the timezone for the headless browser when rendering HTML content. This is particularly useful when your HTML contains JavaScript that displays time or date information, or when you need to render content that depends on the local timezone.
+
+### Valid Timezone Identifiers
+
+Use any valid PHP timezone identifier. Common examples:
+
+- `UTC` - Coordinated Universal Time
+- `America/New_York` - Eastern Time (US)
+- `Europe/London` - British Time
+- `Europe/Berlin` - Central European Time
+- `Asia/Tokyo` - Japan Standard Time
+
+You can find all valid timezone identifiers using PHP's `timezone_identifiers_list()` function or by checking the [PHP timezone documentation](https://www.php.net/manual/en/timezones.php).
+
+### Examples
+
+```bash
+# Render HTML with New York timezone
+./trmnl-pipeline browser --input=clock.html --timezone=America/New_York
+```
 
 ## Usage Examples
 

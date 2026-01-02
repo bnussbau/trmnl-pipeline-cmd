@@ -4,20 +4,20 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "1e2780520d6d6044ea584105879054b0",
+    "content-hash": "fea5e8bff9e49fc655885943eeaea2e8",
     "packages": [
         {
             "name": "bnussbau/trmnl-pipeline-php",
-            "version": "0.4.0",
+            "version": "0.6.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/bnussbau/trmnl-pipeline-php.git",
-                "reference": "b58b937f36e55aa7cbd4859cbe7a902bf1050bf8"
+                "reference": "228505afa8a39a5033916e9ae5ccbf1733092c1f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/bnussbau/trmnl-pipeline-php/zipball/b58b937f36e55aa7cbd4859cbe7a902bf1050bf8",
-                "reference": "b58b937f36e55aa7cbd4859cbe7a902bf1050bf8",
+                "url": "https://api.github.com/repos/bnussbau/trmnl-pipeline-php/zipball/228505afa8a39a5033916e9ae5ccbf1733092c1f",
+                "reference": "228505afa8a39a5033916e9ae5ccbf1733092c1f",
                 "shasum": ""
             },
             "require": {
@@ -59,7 +59,7 @@
             ],
             "support": {
                 "issues": "https://github.com/bnussbau/trmnl-pipeline-php/issues",
-                "source": "https://github.com/bnussbau/trmnl-pipeline-php/tree/0.4.0"
+                "source": "https://github.com/bnussbau/trmnl-pipeline-php/tree/0.6.0"
             },
             "funding": [
                 {
@@ -75,7 +75,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-10-30T11:52:17+00:00"
+            "time": "2025-12-02T15:18:51+00:00"
         },
         {
             "name": "brick/math",
@@ -8577,5 +8577,5 @@
         "php": "^8.2"
     },
     "platform-dev": {},
-    "plugin-api-version": "2.6.0"
+    "plugin-api-version": "2.9.0"
 }

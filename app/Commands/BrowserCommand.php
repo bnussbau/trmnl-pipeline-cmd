@@ -19,7 +19,8 @@ class BrowserCommand extends Command
     protected $signature = 'browser
                             {--i|input= : Input HTML file path or URL}
                             {--o|output= : Output PNG file path (optional)}
-                            {--model= : Model name for automatic configuration (e.g., og_png)}';
+                            {--model= : Model name for automatic configuration (e.g., og_png)}
+                            {--timezone= : Browser timezone (e.g., UTC, America/New_York, Europe/Berlin)}';
 
     /**
      * The description of the command.
@@ -57,6 +58,11 @@ class BrowserCommand extends Command
             if ($modelName) {
                 $model = $this->getModel($modelName);
                 $browserStage->configureFromModel($model);
+            }
+
+            // Apply timezone if provided
+            if ($this->option('timezone')) {
+                $this->applyTimezone($browserStage);
             }
 
             if (! $output) {
@@ -134,6 +140,26 @@ class BrowserCommand extends Command
         $dirname = $pathInfo['dirname'] ?? '.';
 
         return $dirname.'/'.$filename.'_browser.png';
+    }
+
+    /**
+     * Apply timezone to browser stage
+     */
+    private function applyTimezone(BrowserStage $browserStage): void
+    {
+        $timezone = $this->option('timezone');
+
+        // Validate timezone
+        if (! in_array($timezone, timezone_identifiers_list())) {
+            throw new \RuntimeException("Invalid timezone: {$timezone}");
+        }
+
+        // Try timezone() method first, fallback to setBrowsershotOption
+        if (method_exists($browserStage, 'timezone')) {
+            $browserStage->timezone($timezone);
+        } else {
+            $browserStage->setBrowsershotOption('timezoneId', $timezone);
+        }
     }
 
     /**

@@ -3,6 +3,7 @@
 namespace App\Commands;
 
 use App\Support\BrowsershotHelper;
+use Bnussbau\TrmnlPipeline\Data\PaletteData;
 use Bnussbau\TrmnlPipeline\Model;
 use Bnussbau\TrmnlPipeline\Stages\BrowserStage;
 use Bnussbau\TrmnlPipeline\Stages\ImageStage;
@@ -30,7 +31,10 @@ class PipelineCommand extends Command
                            {--bitDepth= : Bit depth (1, 2, 8)}
                            {--offsetX= : Horizontal offset in pixels}
                            {--offsetY= : Vertical offset in pixels}
-                           {--dither : Enable Floyd–Steinberg dithering}';
+                           {--dither : Enable Floyd–Steinberg dithering}
+                           {--timezone= : Browser timezone (e.g., UTC, America/New_York, Europe/Berlin)}
+                           {--palette= : Palette ID (e.g., color-6a, color-7a, bw, gray-256)}
+                           {--colormap= : Comma-separated hex colors (e.g., #FF0000,#00FF00,#0000FF)}';
 
     /**
      * The description of the command.
@@ -62,6 +66,7 @@ class PipelineCommand extends Command
 
             $pipeline = new TrmnlPipeline;
 
+            $model = null;
             if ($modelName) {
                 $model = $this->getModel($modelName);
                 $pipeline->model($model);
@@ -75,10 +80,22 @@ class PipelineCommand extends Command
             $browserStage = new BrowserStage($browsershot);
             $browserStage->html($html);
 
+            // Apply timezone if provided
+            if ($this->option('timezone')) {
+                $this->applyTimezone($browserStage);
+            }
+
             $pipeline->pipe($browserStage);
 
             // Add image stage
             $imageStage = new ImageStage;
+            
+            // Configure from model first if model is set
+            if ($model !== null) {
+                $imageStage->configureFromModel($model);
+            }
+            
+            // Apply user parameters (these override model defaults)
             $this->applyImageParameters($imageStage);
 
             if ($output) {
@@ -167,6 +184,97 @@ class PipelineCommand extends Command
         if ($this->option('offsetY')) {
             $imageStage->offsetY((int) $this->option('offsetY'));
         }
+
+        if ($this->option('dither')) {
+            $imageStage->dither(true);
+        }
+
+        // Apply palette or colormap
+        $colormap = $this->getColormap();
+        if ($colormap !== null) {
+            $imageStage->colormap($colormap);
+            // Set colors to match colormap size for color palette detection
+            if (! $this->option('colors')) {
+                $imageStage->colors(count($colormap));
+            }
+            // Set format to PNG if not set (colormap only works with PNG)
+            if (! $this->option('format')) {
+                $imageStage->format('png');
+            }
+            // Set bit depth to 2 if not set (required for color palettes)
+            if (! $this->option('bitDepth')) {
+                $imageStage->bitDepth(2);
+            }
+        }
+    }
+
+    /**
+     * Apply timezone to browser stage
+     */
+    private function applyTimezone(BrowserStage $browserStage): void
+    {
+        $timezone = $this->option('timezone');
+
+        // Validate timezone
+        if (! in_array($timezone, timezone_identifiers_list())) {
+            throw new \RuntimeException("Invalid timezone: {$timezone}");
+        }
+
+        // Try timezone() method first, fallback to setBrowsershotOption
+        if (method_exists($browserStage, 'timezone')) {
+            $browserStage->timezone($timezone);
+        } else {
+            $browserStage->setBrowsershotOption('timezoneId', $timezone);
+        }
+    }
+
+    /**
+     * Get colormap from palette ID or custom colormap string
+     */
+    private function getColormap(): ?array
+    {
+        $paletteId = $this->option('palette');
+        $colormapStr = $this->option('colormap');
+
+        // If both are provided, colormap takes precedence
+        if ($colormapStr) {
+            return $this->parseColormap($colormapStr);
+        }
+
+        if ($paletteId) {
+            return $this->getPaletteColors($paletteId);
+        }
+
+        return null;
+    }
+
+    /**
+     * Load palette colors from palette ID
+     */
+    private function getPaletteColors(string $paletteId): array
+    {
+        $paletteData = PaletteData::getById($paletteId);
+        
+        if ($paletteData->colors === null) {
+            throw new \RuntimeException("Palette '{$paletteId}' has no colors defined");
+        }
+
+        return $paletteData->colors;
+    }
+
+    /**
+     * Parse colormap from comma-separated string
+     */
+    private function parseColormap(string $colormapStr): array
+    {
+        $colors = array_map('trim', explode(',', $colormapStr));
+        $colors = array_filter($colors, fn ($color) => ! empty($color));
+
+        if (empty($colors)) {
+            throw new \RuntimeException('Colormap cannot be empty');
+        }
+
+        return array_values($colors);
     }
 
     /**

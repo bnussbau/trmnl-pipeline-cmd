@@ -2,6 +2,7 @@
 
 namespace App\Commands;
 
+use Bnussbau\TrmnlPipeline\Data\PaletteData;
 use Bnussbau\TrmnlPipeline\Model;
 use Bnussbau\TrmnlPipeline\Stages\ImageStage;
 use Illuminate\Console\Scheduling\Schedule;
@@ -26,7 +27,9 @@ class ImageCommand extends Command
                            {--bitDepth= : Bit depth (1, 2, 8)}
                            {--offsetX= : Horizontal offset in pixels}
                            {--offsetY= : Vertical offset in pixels}
-                           {--dither : Enable Floyd–Steinberg dithering}';
+                           {--dither : Enable Floyd–Steinberg dithering}
+                           {--palette= : Palette ID (e.g., color-6a, color-7a, bw, gray-256)}
+                           {--colormap= : Comma-separated hex colors (e.g., #FF0000,#00FF00,#0000FF)}';
 
     /**
      * The description of the command.
@@ -122,6 +125,73 @@ class ImageCommand extends Command
         if ($this->option('dither')) {
             $imageStage->dither(true);
         }
+
+        // Apply palette or colormap
+        $colormap = $this->getColormap();
+        if ($colormap !== null) {
+            $imageStage->colormap($colormap);
+            // Set colors to match colormap size for color palette detection
+            if (! $this->option('colors')) {
+                $imageStage->colors(count($colormap));
+            }
+            // Set format to PNG if not set (colormap only works with PNG)
+            if (! $this->option('format')) {
+                $imageStage->format('png');
+            }
+            // Set bit depth to 2 if not set (required for color palettes)
+            if (! $this->option('bitDepth')) {
+                $imageStage->bitDepth(2);
+            }
+        }
+    }
+
+    /**
+     * Get colormap from palette ID or custom colormap string
+     */
+    private function getColormap(): ?array
+    {
+        $paletteId = $this->option('palette');
+        $colormapStr = $this->option('colormap');
+
+        // If both are provided, colormap takes precedence
+        if ($colormapStr) {
+            return $this->parseColormap($colormapStr);
+        }
+
+        if ($paletteId) {
+            return $this->getPaletteColors($paletteId);
+        }
+
+        return null;
+    }
+
+    /**
+     * Load palette colors from palette ID
+     */
+    private function getPaletteColors(string $paletteId): array
+    {
+        $paletteData = PaletteData::getById($paletteId);
+        
+        if ($paletteData->colors === null) {
+            throw new \RuntimeException("Palette '{$paletteId}' has no colors defined");
+        }
+
+        return $paletteData->colors;
+    }
+
+    /**
+     * Parse colormap from comma-separated string
+     */
+    private function parseColormap(string $colormapStr): array
+    {
+        $colors = array_map('trim', explode(',', $colormapStr));
+        $colors = array_filter($colors, fn ($color) => ! empty($color));
+
+        if (empty($colors)) {
+            throw new \RuntimeException('Colormap cannot be empty');
+        }
+
+        return array_values($colors);
     }
 
     /**
